@@ -6,6 +6,8 @@ from entropy.entropy_params import est_params_ggd
 import scipy.signal
 from skvideo.utils.mscn import gen_gauss_window
 import scipy.ndimage
+from pywt import wavedec2
+from pyrtools.pyramids import SteerablePyramidSpace as SPyr
 
 def compute_MS_transform(image, window, extend_mode='reflect'):
     h,w = image.shape
@@ -85,3 +87,31 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
         entropy['temporal_scale' + str(scale_factor)] = temporal_ent_scaled
         
     return entropy
+
+
+def entrpy_frame(frame_data):
+    pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
+    subband_keys = []
+    for key in list(pyr.keys())[1:-2:3]:
+        subband_keys.append(key)
+    subband_keys.reverse()
+
+    blk = 5
+    sigma_nsq = 0.1
+
+    ents = []
+    for i, subband_key in enumerate(subband_keys):
+        subband_coef = pyr[subband_key]
+        spatial_sig_frame, spatial_ent_frame = est_params_ggd(subband_coef, blk, sigma_nsq)
+
+
+
+        spatial_sig_frame = np.array(spatial_sig_frame)
+        spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+        
+        spatial_ent_frame = np.array(spatial_ent_frame)
+        spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
+        spatial_ent_scaled = np.log(1 + spatial_sig_frame**2) * spatial_ent_frame
+        ents.append(spatial_ent_scaled)
+    return ents
+        

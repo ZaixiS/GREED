@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            // "args": ["--ref_path", "data/books_crf_0_120fps.yuv", "--dist_path", "data/books_crf_28_30fps.yuv", "--ref_fps", "120", "--dist_fps", "30", "--height", "1080", "--width", "1920", "--bit_depth", "8", "--temp_filt", "bior22"]
+            "args": ["--wsize","31","--nonlinear","local_exp","--parameter","5" ,"--channel","0"]
+        }
+    ]
+}
