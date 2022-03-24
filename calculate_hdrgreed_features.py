@@ -13,4 +13,4 @@ parser.add_argument("--channel",help="indicate which channel to process. Please 
 args = parser.parse_args()
 ref_path = '/media/josh-admin/nebula_josh/hdr/fall2021_hdr_upscaled_yuv/4k_ref_UrbanLandmark_upscaled.yuv'
 dis_path = '/media/josh-admin/nebula_josh/hdr/fall2021_hdr_upscaled_yuv/1080p_1M_UrbanLandmark_upscaled.yuv'
-hdr_greed(ref_path,dis_path,args)
+feats = hdr_greed(ref_path,dis_path,args)
