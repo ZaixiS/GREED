@@ -8,16 +8,17 @@ def cal_difference_by_band(ref_ent, dis_ent):
     return  np.array([np.abs((ref_ent[i]-dis_ent[i])).mean() for i in range(len(ref_ent))])
 
 
-def hdr_greed(ref_name,dis_name,args):
+def hdr_greed(ref_name,dis_name,framenum,args):
     h = 2160 #hs[dis_index]
     w = 3840 #ws[dis_index]
-    
-    framenos = 100
+    skip = 50
     channel = args.channel
+    framenum =101
     ref_file_object = open(ref_name)
     dis_file_object = open(dis_name)
-    framelist =  list(range(0,framenos,50))
+    framelist =  list(range(0,framenum,skip))
     nonlinear = args.nonlinear
+    feats = []
     for framenum in framelist:
         try:
             ref_multichannel = hdr_yuv_read(ref_file_object,framenum,h,w)
@@ -58,4 +59,7 @@ def hdr_greed(ref_name,dis_name,args):
             ref_ent_none = entrpy_frame(nonlinear_ref)
             dis_ent_none = entrpy_frame(nonlinear_dis)   
             ent_diff_1 = cal_difference_by_band(ref_ent_none,dis_ent_none)
-        return ent_diff_1
+        feats.append(ent_diff_1)
+    feats = np.stack(feats)
+    feats = feats.mean(axis=0)
+    return feats
