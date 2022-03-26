@@ -13,7 +13,7 @@ def hdr_greed(ref_name,dis_name,framenum,args):
     w = 3840 #ws[dis_index]
     skip = 50
     channel = args.channel
-    framenum =101
+
     ref_file_object = open(ref_name)
     dis_file_object = open(dis_name)
     framelist =  list(range(0,framenum,skip))
@@ -56,8 +56,8 @@ def hdr_greed(ref_name,dis_name,framenum,args):
             # dis_ent_2 = entrpy_frame(nonlinear_dis)   
             # ent_diff_2 = cal_difference_by_band(ref_ent_2,dis_ent_2)
         else:
-            ref_ent_none = entrpy_frame(nonlinear_ref)
-            dis_ent_none = entrpy_frame(nonlinear_dis)   
+            ref_ent_none = entrpy_frame(ref_singlechannel)
+            dis_ent_none = entrpy_frame(dis_multichannel)   
             ent_diff_1 = cal_difference_by_band(ref_ent_none,dis_ent_none)
         feats.append(ent_diff_1)
     feats = np.stack(feats)
