@@ -4,7 +4,7 @@ from entropy.entropy_cal import entrpy_frame
 import pandas as pd
 import numpy as np
 import pdb
-=
+
 from matplotlib.pyplot import imsave
 from skimage.filters import rank
 from skimage.morphology import disk
@@ -69,8 +69,10 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             # ent_diff_2 = cal_difference_by_band(ref_ent_2,dis_ent_2)
         elif(nonlinear == 'equal'):
             footprint = disk(30)
-            ref_singlechannel = ref_singlechannel/np.max(ref_singlechannel)
-            dis_singlechannel = dis_singlechannel/np.max(dis_singlechannel)
+            ref_singlechannel = ref_singlechannel/np.max(ref_singlechannel)*1023
+            dis_singlechannel = dis_singlechannel/np.max(dis_singlechannel)*1023
+            ref_singlechannel = ref_singlechannel.astype(np.uint16)
+            dis_singlechannel = dis_singlechannel.astype(np.uint16)
             img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
             img_eq_dis = rank.equalize(dis_singlechannel, selem=footprint)
 
@@ -80,6 +82,7 @@ def hdr_greed(ref_name, dis_name, framenum, args):
 
         else:           
             ref_ent_none = entrpy_frame(ref_singlechannel)
+            
             # pdb.set_trace()
             dis_ent_none = entrpy_frame(dis_singlechannel)   
             ent_diff_1 = cal_difference_by_band(ref_ent_none,dis_ent_none)
