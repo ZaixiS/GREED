@@ -104,8 +104,6 @@ def entrpy_frame(frame_data):
         subband_coef = pyr[subband_key]
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(subband_coef, blk, sigma_nsq)
 
-
-
         spatial_sig_frame = np.array(spatial_sig_frame)
         spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
         
