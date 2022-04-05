@@ -91,6 +91,8 @@ def global_m_exp(Y,delta):
 def global_exp(image,par):
 
     assert len(np.shape(image)) == 2
+    if image.max()>1:
+        image=image/image.max()
     avg = np.average(image)
     y = np.exp(par*(image-avg))
     return y
