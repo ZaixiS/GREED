@@ -2,13 +2,13 @@ import numpy as np
 from entropy.yuvRead import yuvRead_frame
 import os
 from entropy.entropy_params import est_params_ggd_temporal
-from entropy.entropy_params import est_params_ggd
+from entropy.entropy_params import est_params_ggd,estimate_ggdparam,generate_ggd
 import scipy.signal
 from skvideo.utils.mscn import gen_gauss_window
 import scipy.ndimage
 from pywt import wavedec2
 from pyrtools.pyramids import SteerablePyramidSpace as SPyr
-
+import matplotlib.pyplot as plt
 def compute_MS_transform(image, window, extend_mode='reflect'):
     h,w = image.shape
     mu_image = np.zeros((h, w), dtype=np.float32)
@@ -63,6 +63,7 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
         temporal_sig, temporal_ent = est_params_ggd_temporal(dpt_filt, blk, \
                                                                      sigma_nsq)
         
+
         #convert lists to numpy arrays
         spatial_sig = np.array(spatial_sig)
         spatial_sig[np.isinf(spatial_sig)] = 0
@@ -89,7 +90,7 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     return entropy
 
 
-def entrpy_frame(frame_data):
+def entrpy_frame(frame_data,vname = None):
     pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
     subband_keys = []
     for key in list(pyr.keys())[1:-2:3]:
@@ -103,7 +104,31 @@ def entrpy_frame(frame_data):
     for i, subband_key in enumerate(subband_keys):
         subband_coef = pyr[subband_key]
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(subband_coef, blk, sigma_nsq)
-
+        plot = True
+        if plot:
+            savepth = './plots/ggd'
+            try:
+                os.makedirs(savepth)
+            except:
+                pass
+            SPcoefpth = './plots/SPycoef'
+            try:
+                os.makedirs(SPcoefpth)
+            except:
+                pass
+            plt.imsave(os.path.join(SPcoefpth,os.path.basename(vname)[:-4]+'_SPycoef.jpg'),subband_coef,cmap = 'gray')
+            im = plt.hist(subband_coef.flatten(),bins=1900,range = [-1000,1000],density=True,label='SPyr coefficient')
+            x = np.linspace(-1000,1000,1600)
+            alphaparam,sigma = estimate_ggdparam(subband_coef.flatten())
+            ggd= generate_ggd(x,alphaparam,sigma )
+            plt.plot(x,ggd,label = f'ggd fit,alpha={alphaparam}')
+            plt.legend()
+            plt.title(os.path.basename(vname)[:-4] + '_coef')
+            plt.ylim((0, 0.002))
+            plt.savefig(os.path.join(savepth,os.path.basename(vname)[:-4]+'_ggd.pdf'))
+            plt.savefig(os.path.join(savepth,os.path.basename(vname)[:-4]+'_ggd.jpg'))
+            plt.cla()
+            return
         spatial_sig_frame = np.array(spatial_sig_frame)
         spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
         

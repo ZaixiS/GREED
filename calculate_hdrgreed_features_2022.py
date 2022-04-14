@@ -1,6 +1,6 @@
 import argparse
 from utils.HDR_functions import hdr_yuv_read, local_exp, global_exp
-from utils.hdrgreed import hdr_greed
+from utils.hdrgreed_plot import hdr_greed
 from os.path import join
 import pandas as pd
 import os
@@ -8,6 +8,8 @@ from datetime import datetime
 
 from joblib import dump,Parallel,delayed
 import socket
+
+
 
 parser = argparse.ArgumentParser()
 
@@ -23,8 +25,8 @@ parser.add_argument(
 
 if socket.gethostname().find('tacc')>0:
     scratch =  os.environ['SCRATCH']
-    vid_pth = '/scratch/06776/kmd1995/video/HDR_2021_fall_yuv_upscaled/fall2021_hdr_upscaled_yuv'
-    out_root = join(scratch,'feats/feats_hdrgreed/')
+    vid_pth = '/scratch/06776/kmd1995/video/HDR_2022_SPRING_yuv'
+    out_root = join(scratch,'feats_sp2022/feats_hdrgreed/')
     
 
 # elif socket.gethostname().find('a51969')>0: #Odin
@@ -45,7 +47,7 @@ args = parser.parse_args()
 # vid_pth = '/mnt/fdc70e83-f7d8-42c4-91b4-6dd928077e01/zaixi/fall2021_hdr_upscaled_yuv'
 
 # feats = hdr_greed(ref_path,dis_path,args)
-info = pd.read_csv('fall2021_yuv_rw_info.csv', index_col=0)
+info = pd.read_csv('spring2022_yuv_info.csv', index_col=0)
 
 
 def process_video(ind):
@@ -56,11 +58,10 @@ def process_video(ind):
     if video != ref:
 
         feats = hdr_greed(join(vid_pth,video),join(vid_pth, ref), fcount,args)
-        df = pd.DataFrame(feats).transpose()
-        df['video'] = bname
-        return df
+        # df = pd.DataFrame(feats).transpose()
+        # df['video'] = bname
+        # return df
     return 
-
 
 
 r = Parallel(n_jobs=62,verbose=1,backend="multiprocessing")(delayed(process_video)(i) for i in range(len(info)))

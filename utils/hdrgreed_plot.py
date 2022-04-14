@@ -4,9 +4,9 @@ from entropy.entropy_cal import entrpy_frame
 from entropy.entropy_params import estimate_ggdparam,generate_ggd
 import pandas as pd
 import numpy as np
-import pdb
-
+import os
 from matplotlib.pyplot import imsave
+import matplotlib.pyplot as plt
 from skimage.filters import rank
 from skimage.morphology import disk
 from datetime import datetime
@@ -30,7 +30,7 @@ def hdr_greed(ref_name, dis_name, framenum, args):
 
     ref_file_object = open(ref_name)
     dis_file_object = open(dis_name)
-    framelist = list(range(0, framenum, skip))
+    framelist = list(range(35, 45, skip))
     nonlinear = args.nonlinear
     feats = []
     for framenum in framelist:
@@ -58,11 +58,7 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             ref_ent_1 = entrpy_frame(nonlinear_ref)
             dis_ent_1 = entrpy_frame(nonlinear_dis)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
-            # nonlinear_ref = local_exp(ref_singlechannel,-args.parameter,args.wsize)
-            # nonlinear_dis = local_exp(dis_singlechannel,-args.parameter,args.wsize)
-            # ref_ent_2 = entrpy_frame(nonlinear_ref)
-            # dis_ent_2 = entrpy_frame(nonlinear_dis)
-            # ent_diff_2 = cal_difference_by_band(ref_ent_2,dis_ent_2)
+            
 
         elif(nonlinear == 'global_exp'):
             nonlinear_ref = global_exp(ref_singlechannel, args.parameter)
@@ -81,27 +77,31 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             dis_singlechannel = dis_singlechannel/np.max(dis_singlechannel)*1023
             ref_singlechannel = ref_singlechannel.astype(np.uint16)
             dis_singlechannel = dis_singlechannel.astype(np.uint16)
-            
             img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
             img_eq_dis = rank.equalize(dis_singlechannel, selem=footprint)
-     
+            pth_equal = './plots/equalplots/'
+            pth_frame = './plots/frames/'
+            try:
+                os.makedirs(pth_equal)
+            except:
+                pass
+            try:
+                os.makedirs(pth_frame)
+            except:
+                pass
 
-            ref_ent_1 = entrpy_frame(img_eq_ref)
-            dis_ent_1 = entrpy_frame(img_eq_dis)
-            ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
+            plt.imsave(os.path.join(pth_equal,os.path.basename(ref_name[:-4]+'_equaled.jpg')),img_eq_ref,cmap = 'gray')
+            plt.imsave(os.path.join(pth_equal,os.path.basename(dis_name[:-4]+'_equaled.jpg')),img_eq_dis,cmap = 'gray')
+            plt.imsave(os.path.join(pth_frame,os.path.basename(ref_name[:-4]+'_frame.jpg')),ref_singlechannel,cmap = 'gray')
+            plt.imsave(os.path.join(pth_frame,os.path.basename(dis_name[:-4]+'_frame.jpg')),dis_singlechannel,cmap = 'gray')
+            entrpy_frame(img_eq_ref,ref_name)
+            entrpy_frame(img_eq_dis,dis_name)
 
         else:           
             ref_ent_none = entrpy_frame(ref_singlechannel)
             
-            # pdb.set_trace()
             dis_ent_none = entrpy_frame(dis_singlechannel)   
             ent_diff_1 = cal_difference_by_band(ref_ent_none,dis_ent_none)
 
-        feats.append(ent_diff_1)
-    feats = np.stack(feats)
-    feats = feats.mean(axis=0)
-    now = datetime.now()
 
-    current_time = now.strftime("%H:%M:%S")
-    print("Finish Time =", current_time)
-    return feats
+    return 0

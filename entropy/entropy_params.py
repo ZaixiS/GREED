@@ -3,7 +3,7 @@ import skimage.util
 from skvideo.utils.mscn import gen_gauss_window
 from scipy.stats import kurtosis
 from entropy.estimateggdparam import cal_shape_kurtosis, entropy_ggd
-
+from scipy.special import gamma
 def est_params_ggd(y, blk, sigma_nsq):
     """ 'ss' and 'ent' refer to the local variance parameter and the
         entropy at different locations of the subband
@@ -58,3 +58,28 @@ def est_params_ggd_temporal(y, blk, sigma_nsq):
         temporal_ss.append(ss)
         temporal_ent.append(ent)
     return temporal_ss, temporal_ent
+
+
+
+def estimate_ggdparam(vec):
+    # The function to globally estimate the GGD parameters
+    gam = np.asarray([x / 1000.0 for x in range(200, 10000, 1)])
+    r_gam = (gamma(1.0/gam)*gamma(3.0/gam))/((gamma(2.0/gam))**2)
+    sigma_sq = np.mean(vec**2)
+    sigma = np.sqrt(sigma_sq)
+    E = np.mean(np.abs(vec))
+    rho = sigma_sq/(E**2)
+    array_position =(np.abs(rho - r_gam)).argmin()
+    alphaparam = gam[array_position]
+    return alphaparam,sigma
+
+def generate_ggd(x,alphaparam,sigma):
+    betaparam = sigma*np.sqrt(gamma(1.0/alphaparam)/gamma(3.0/alphaparam))    
+    y = alphaparam/(2*betaparam*gamma(1.0/alphaparam))*np.exp(-(np.abs(x)/betaparam)**alphaparam)
+    return y
+    gamma_range = np.arange(0.2, 10, 0.001)
+    a = gamma(2.0/gamma_range)
+    a *= a
+    b = gamma(1.0/gamma_range)
+    c = gamma(3.0/gamma_range)
+    prec_gammas = a/(b*c)
