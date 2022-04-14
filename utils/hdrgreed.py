@@ -58,11 +58,7 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             ref_ent_1 = entrpy_frame(nonlinear_ref)
             dis_ent_1 = entrpy_frame(nonlinear_dis)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
-            # nonlinear_ref = local_exp(ref_singlechannel,-args.parameter,args.wsize)
-            # nonlinear_dis = local_exp(dis_singlechannel,-args.parameter,args.wsize)
-            # ref_ent_2 = entrpy_frame(nonlinear_ref)
-            # dis_ent_2 = entrpy_frame(nonlinear_dis)
-            # ent_diff_2 = cal_difference_by_band(ref_ent_2,dis_ent_2)
+
 
         elif(nonlinear == 'global_exp'):
             nonlinear_ref = global_exp(ref_singlechannel, args.parameter)
@@ -70,11 +66,7 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             ref_ent_1 = entrpy_frame(nonlinear_ref)
             dis_ent_1 = entrpy_frame(nonlinear_dis)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
-            # nonlinear_ref = global_exp(ref_singlechannel,-args.parameter)
-            # nonlinear_dis = global_exp(dis_singlechannel,-args.parameter)
-            # ref_ent_2 = entrpy_frame(nonlinear_ref)
-            # dis_ent_2 = entrpy_frame(nonlinear_dis)
-            # ent_diff_2 = cal_difference_by_band(ref_ent_2,dis_ent_2)
+
         elif(nonlinear == 'equal'):
             footprint = disk(30)
             ref_singlechannel = ref_singlechannel/np.max(ref_singlechannel)*1023
