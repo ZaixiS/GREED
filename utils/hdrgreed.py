@@ -55,16 +55,16 @@ def hdr_greed(ref_name, dis_name, framenum, args):
                 ref_singlechannel, -args.parameter, args.wsize)
             nonlinear_dis = local_exp(
                 dis_singlechannel, -args.parameter, args.wsize)
-            ref_ent_1 = entrpy_frame(nonlinear_ref)
-            dis_ent_1 = entrpy_frame(nonlinear_dis)
+            ref_ent_1 = entrpy_frame(nonlinear_ref,args.band_pass)
+            dis_ent_1 = entrpy_frame(nonlinear_dis,args.band_pass)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
 
         elif(nonlinear == 'global_exp'):
             nonlinear_ref = global_exp(ref_singlechannel, args.parameter)
             nonlinear_dis = global_exp(dis_singlechannel, args.parameter)
-            ref_ent_1 = entrpy_frame(nonlinear_ref)
-            dis_ent_1 = entrpy_frame(nonlinear_dis)
+            ref_ent_1 = entrpy_frame(nonlinear_ref,args.band_pass)
+            dis_ent_1 = entrpy_frame(nonlinear_dis,args.band_pass)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         elif(nonlinear == 'equal'):
@@ -78,15 +78,15 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             img_eq_dis = rank.equalize(dis_singlechannel, selem=footprint)
      
 
-            ref_ent_1 = entrpy_frame(img_eq_ref)
-            dis_ent_1 = entrpy_frame(img_eq_dis)
+            ref_ent_1 = entrpy_frame(img_eq_ref,args.band_pass)
+            dis_ent_1 = entrpy_frame(img_eq_dis,args.band_pass)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         else:           
-            ref_ent_none = entrpy_frame(ref_singlechannel)
+            ref_ent_none = entrpy_frame(ref_singlechannel,args.band_pass)
             
-            # pdb.set_trace()
-            dis_ent_none = entrpy_frame(dis_singlechannel)   
+
+            dis_ent_none = entrpy_frame(dis_singlechannel,args.band_pass)   
             ent_diff_1 = cal_difference_by_band(ref_ent_none,dis_ent_none)
 
         feats.append(ent_diff_1)

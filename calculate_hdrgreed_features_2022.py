@@ -1,6 +1,6 @@
 import argparse
 from utils.HDR_functions import hdr_yuv_read, local_exp, global_exp
-from utils.hdrgreed_plot import hdr_greed
+from utils.hdrgreed import hdr_greed
 from os.path import join
 import pandas as pd
 import os
@@ -17,6 +17,8 @@ parser.add_argument(
     "--nonlinear", help="select the nonliearity. Support 'local_exp', 'global_exp', 'equal' or 'none'.")
 parser.add_argument(
     "--parameter", help="the parameter for the nonliear. Use with --nonliear", type=float)
+parser.add_argument(
+    "--band_pass", help="select the bandpass in NSS. Support 'SPyr', 'NS', 'MSCN'.")
 parser.add_argument(
     "--wsize", help="the parameter for the nonliear window size. Use with --nonliear and local transform.", type=float)
 parser.add_argument(
@@ -58,14 +60,14 @@ def process_video(ind):
     if video != ref:
 
         feats = hdr_greed(join(vid_pth,video),join(vid_pth, ref), fcount,args)
-        # df = pd.DataFrame(feats).transpose()
-        # df['video'] = bname
-        # return df
+        df = pd.DataFrame(feats).transpose()
+        df['video'] = bname
+        return df
     return 
 
 
 r = Parallel(n_jobs=62,verbose=1,backend="multiprocessing")(delayed(process_video)(i) for i in range(len(info)))
 feats = pd.concat(r)
-outpth = join(out_root,f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}')
+outpth = join(out_root,f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}')
 os.makedirs(outpth)
 feats.to_csv(join(outpth,'feats.csv'))

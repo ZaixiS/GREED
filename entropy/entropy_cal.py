@@ -64,7 +64,7 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
                              2**num_levels - 1, valid_lim))
 
         for freq in range(wfun.shape[0]):
-<<<<<<< HEAD
+
             dpt_filt[:,:,freq,:] = scipy.ndimage.filters.convolve1d(frame_data,\
                     wfun[freq,:],axis=2,mode='constant')[:,:,start_ind:start_ind + valid_lim]
         
@@ -72,16 +72,6 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
                                                                      sigma_nsq)
         
 
-        #convert lists to numpy arrays
-=======
-            dpt_filt[:, :, freq, :] = scipy.ndimage.filters.convolve1d(frame_data,
-                                                                       wfun[freq, :], axis=2, mode='constant')[:, :, start_ind:start_ind + valid_lim]
-
-        temporal_sig, temporal_ent = est_params_ggd_temporal(dpt_filt, blk,
-                                                             sigma_nsq)
-
-        # convert lists to numpy arrays
->>>>>>> 95b3c839fcc265fac56d6c8e3eb6659ee83b8170
         spatial_sig = np.array(spatial_sig)
         spatial_sig[np.isinf(spatial_sig)] = 0
 
@@ -107,15 +97,6 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
 
     return entropy
 
-<<<<<<< HEAD
-def entrpy_frame(frame_data,vname = None):
-    pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
-    subband_keys = []
-    for key in list(pyr.keys())[1:-2:3]:
-        subband_keys.append(key)
-    subband_keys.reverse()
-=======
->>>>>>> 95b3c839fcc265fac56d6c8e3eb6659ee83b8170
 
 def entrpy_frame(frame_data, method='SPyr'):
     blk = 5
@@ -142,7 +123,7 @@ def entrpy_frame(frame_data, method='SPyr'):
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
         return ents
-    elif method.lower() == 'MS':
+    elif method.lower() == 'ms':
         win_len = 7
         ents = []
         for scale_factor in range(4):
@@ -162,7 +143,7 @@ def entrpy_frame(frame_data, method='SPyr'):
             spatial_ent_scaled = np.log(
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
-    elif method.lower() == 'MSCN':
+    elif method.lower() == 'mscn':
         win_len = 7
         ents = []
         for scale_factor in range(4):
@@ -184,45 +165,5 @@ def entrpy_frame(frame_data, method='SPyr'):
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
 
-<<<<<<< HEAD
-    ents = []
-    for i, subband_key in enumerate(subband_keys):
-        subband_coef = pyr[subband_key]
-        spatial_sig_frame, spatial_ent_frame = est_params_ggd(subband_coef, blk, sigma_nsq)
-        plot = True
-        if plot:
-            savepth = './plots/ggd'
-            try:
-                os.makedirs(savepth)
-            except:
-                pass
-            SPcoefpth = './plots/SPycoef'
-            try:
-                os.makedirs(SPcoefpth)
-            except:
-                pass
-            plt.imsave(os.path.join(SPcoefpth,os.path.basename(vname)[:-4]+'_SPycoef.jpg'),subband_coef,cmap = 'gray')
-            im = plt.hist(subband_coef.flatten(),bins=1900,range = [-1000,1000],density=True,label='SPyr coefficient')
-            x = np.linspace(-1000,1000,1600)
-            alphaparam,sigma = estimate_ggdparam(subband_coef.flatten())
-            ggd= generate_ggd(x,alphaparam,sigma )
-            plt.plot(x,ggd,label = f'ggd fit,alpha={alphaparam}')
-            plt.legend()
-            plt.title(os.path.basename(vname)[:-4] + '_coef')
-            plt.ylim((0, 0.002))
-            plt.savefig(os.path.join(savepth,os.path.basename(vname)[:-4]+'_ggd.pdf'))
-            plt.savefig(os.path.join(savepth,os.path.basename(vname)[:-4]+'_ggd.jpg'))
-            plt.cla()
-            return
-        spatial_sig_frame = np.array(spatial_sig_frame)
-        spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
-        
-        spatial_ent_frame = np.array(spatial_ent_frame)
-        spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-        spatial_ent_scaled = np.log(1 + spatial_sig_frame**2) * spatial_ent_frame
-        ents.append(spatial_ent_scaled)
     return ents
         
-=======
-        return ents
->>>>>>> 95b3c839fcc265fac56d6c8e3eb6659ee83b8170
