@@ -54,15 +54,15 @@ def hdr_greed(ref_name, dis_name, framenum, args):
                 ref_singlechannel, -args.parameter, args.wsize)
             nonlinear_dis = local_exp(
                 dis_singlechannel, -args.parameter, args.wsize)
-            ref_ent_1 = entrpy_frame(nonlinear_ref, args.band_pass)
-            dis_ent_1 = entrpy_frame(nonlinear_dis, args.band_pass)
+            ref_ent_1 = entrpy_frame(nonlinear_ref, args)
+            dis_ent_1 = entrpy_frame(nonlinear_dis, args)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         elif(nonlinear == 'global_exp'):
             nonlinear_ref = global_exp(ref_singlechannel, args.parameter)
             nonlinear_dis = global_exp(dis_singlechannel, args.parameter)
-            ref_ent_1 = entrpy_frame(nonlinear_ref, args.band_pass)
-            dis_ent_1 = entrpy_frame(nonlinear_dis, args.band_pass)
+            ref_ent_1 = entrpy_frame(nonlinear_ref, args)
+            dis_ent_1 = entrpy_frame(nonlinear_dis, args)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         elif(nonlinear == 'equal'):
@@ -77,13 +77,13 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
             img_eq_dis = rank.equalize(dis_singlechannel, selem=footprint)
 
-            ref_ent_1 = entrpy_frame(img_eq_ref, args.band_pass, ref_name)
-            dis_ent_1 = entrpy_frame(img_eq_dis, args.band_pass, dis_name)
+            ref_ent_1 = entrpy_frame(img_eq_ref, args, ref_name)
+            dis_ent_1 = entrpy_frame(img_eq_dis, args, dis_name)
 
         else:
-            ref_ent_none = entrpy_frame(ref_singlechannel, args.band_pass)
+            ref_ent_none = entrpy_frame(ref_singlechannel, args)
 
-            dis_ent_none = entrpy_frame(dis_singlechannel, args.band_pass)
+            dis_ent_none = entrpy_frame(dis_singlechannel, args)
             ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
 
         # feats.append(ent_diff_1)
