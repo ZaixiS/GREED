@@ -172,6 +172,7 @@ def entrpy_frame(frame_data, args=None):
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
+
         dog_coef = difference_of_gaussians(
             frame_data, args.dog_param1, args.dog_param2)
 

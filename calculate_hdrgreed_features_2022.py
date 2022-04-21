@@ -1,6 +1,6 @@
 import argparse
 from utils.HDR_functions import hdr_yuv_read, local_exp, global_exp
-from utils.hdrgreed_plot import hdr_greed
+from utils.hdrgreed import hdr_greed
 from os.path import join
 import pandas as pd
 import os
@@ -63,13 +63,13 @@ def process_video(ind):
 
         feats = hdr_greed(join(vid_pth, video),
                           join(vid_pth, ref), fcount, args)
-        # df = pd.DataFrame(feats).transpose()
-        # df['video'] = bname
-        # return df
+        df = pd.DataFrame(feats).transpose()
+        df['video'] = bname
+        return df
     return
 
 
-r = Parallel(n_jobs=60, verbose=1, backend="multiprocessing")(
+r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
     delayed(process_video)(i) for i in range(len(info)))
 feats = pd.concat(r)
 outpth = join(
