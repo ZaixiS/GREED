@@ -19,7 +19,9 @@
                 "--parameter",
                 "5",
                 "--channel",
-                "0"
+                "0",
+                "--band_pass",
+                "dog"
             ]
         }
     ]

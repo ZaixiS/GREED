@@ -9,9 +9,10 @@ import scipy.ndimage
 from pywt import wavedec2
 from pyrtools.pyramids import SteerablePyramidSpace as SPyr
 import matplotlib.pyplot as plt
-from skimage.filters import difference_of_gaussians
+
 from skimage.transform import rescale, resize, downscale_local_mean
 from skvideo.utils.mscn import gen_gauss_window, compute_image_mscn_transform
+from skimage.filters import difference_of_gaussians
 
 
 def compute_MS_transform(image, window, extend_mode='reflect'):
@@ -98,7 +99,9 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     return entropy
 
 
-def entrpy_frame(frame_data, method='SPyr'):
+def entrpy_frame(frame_data, method='SPyr', vname=None):
+    bname = os.path.basename(vname)[:-4]
+
     blk = 5
     sigma_nsq = 0.1
     if method.lower() == 'spyr':
@@ -126,59 +129,98 @@ def entrpy_frame(frame_data, method='SPyr'):
     elif method.lower() == 'ms':
         win_len = 7
         ents = []
+        path1 = './plots/MS_coef_frame/'
+        path2 = './plots/MS_coef_hist/'
+        if not os.path.exists(path1):
+            os.makedirs(path1)
+        if not os.path.exists(path2):
+            os.makedirs(path2)
         for scale_factor in range(4):
             image_rescaled = rescale(
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             MS_frame = compute_MS_transform(image_rescaled, window)
+            plt.imsave(os.path.join(path1, bname+'.jpg'),
+                       MS_frame, cmap='gray')
+            im = plt.hist(MS_frame.flatten(), bins=1900,
+                          range=[-0.001, 0.001], density=True, label='MS coefficient')
+    # x = np.linspace(-1.5,1.5,1600)
+            plt.ylim([0, 8000])
+            x = np.linspace(-0.001, 0.001, 1600)
+            alphaparam, sigma = estimate_ggdparam(MS_frame.flatten())
+            ggd = generate_ggd(x, alphaparam, sigma)
+            plt.plot(x, ggd, label=f'ggd fit,alpha={alphaparam}')
+            plt.legend()
+            plt.title(bname + '_MS')
+            plt.savefig(os.path.join(path2, bname+'.jpg'))
+            plt.savefig(os.path.join(path2, bname+'.pdf'))
+            plt.cla()
+            return
 
-            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
-                MS_frame, blk, sigma_nsq)
-            spatial_sig_frame = np.array(spatial_sig_frame)
-            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
-
-            spatial_ent_frame = np.array(spatial_ent_frame)
-            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-
-            spatial_ent_scaled = np.log(
-                1 + spatial_sig_frame**2) * spatial_ent_frame
-            ents.append(spatial_ent_scaled)
     elif method.lower() == 'mscn':
         win_len = 7
         ents = []
+        path1 = './plots/MSCN_coef_frame/'
+        path2 = './plots/MSCN_coef_hist/'
+
+        if not os.path.exists(path1):
+            os.makedirs(path1)
+        if not os.path.exists(path2):
+            os.makedirs(path2)
         for scale_factor in range(4):
             image_rescaled = rescale(
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             mscn1, var, mu = compute_image_mscn_transform(
                 image_rescaled, extend_mode='nearest')
-
-            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
-                mscn1, blk, sigma_nsq)
-            spatial_sig_frame = np.array(spatial_sig_frame)
-            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
-
-            spatial_ent_frame = np.array(spatial_ent_frame)
-            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-
-            spatial_ent_scaled = np.log(
-                1 + spatial_sig_frame**2) * spatial_ent_frame
-            ents.append(spatial_ent_scaled)
-
+            plt.imsave(os.path.join(path1, bname+'.jpg'),
+                       mscn1, cmap='gray')
+            # plt.imsave(os.path.join(path1, bname+'.jpg'),
+            #            mscn1, cmap='gray')
+            im = plt.hist(mscn1.flatten(), bins=1900,
+                          range=[-0.001, 0.001], density=True, label='MSCN coefficient')
+            # im = plt.hist(mscn1.flatten(), bins=1900,
+            #               density=True, label='MS coefficient')
+            # x = np.linspace(-1.5, 1.5, 1600)
+            plt.ylim([0, 8000])
+            x = np.linspace(-0.001, 0.001, 1600)
+            alphaparam, sigma = estimate_ggdparam(mscn1.flatten())
+            ggd = generate_ggd(x, alphaparam, sigma)
+            plt.plot(x, ggd, label=f'ggd fit,alpha={alphaparam}')
+            plt.legend()
+            plt.title(bname + '_MSCN')
+            plt.savefig(os.path.join(path2, bname+'_MSCNGGDfit.jpg'))
+            plt.savefig(os.path.join(path2, bname+'_MSCNGGDfit.pdf'))
+            plt.cla()
+            return
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
-        dog_coef = difference_of_gaussians(frame_data, 133, 200)
-
-        spatial_sig_frame, spatial_ent_frame = est_params_ggd(
-            dog_coef, blk, sigma_nsq)
-        spatial_sig_frame = np.array(spatial_sig_frame)
-        spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
-
-        spatial_ent_frame = np.array(spatial_ent_frame)
-        spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-
-        spatial_ent_scaled = np.log(
-            1 + spatial_sig_frame**2) * spatial_ent_frame
-        ents.append(spatial_ent_scaled)
+        sigma1, sigma2 = 60, 90
+        path1 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame/'
+        path2 = f'./plots/DOG_{sigma1}-{sigma2}_coef_hist/'
+        if not os.path.exists(path1):
+            os.makedirs(path1)
+        if not os.path.exists(path2):
+            os.makedirs(path2)
+        dog_coef = difference_of_gaussians(frame_data, sigma1, sigma2)
+        im = plt.hist(dog_coef.flatten(), bins=1900,
+                      density=True, label='MSCN coefficient')
+        plt.imsave(os.path.join(path1, bname+'.jpg'),
+                   dog_coef, cmap='gray')
+        # im = plt.hist(mscn1.flatten(), bins=1900,
+        #               density=True, label='MS coefficient')
+        # x = np.linspace(-1.5, 1.5, 1600)
+        plt.ylim([0, 8000])
+        x = np.linspace(-0.001, 0.001, 1600)
+        alphaparam, sigma = estimate_ggdparam(dog_coef.flatten())
+        ggd = generate_ggd(x, alphaparam, sigma)
+        plt.plot(x, ggd, label=f'ggd fit,alpha={alphaparam}')
+        plt.legend()
+        plt.title(bname + '_MSCN')
+        plt.savefig(os.path.join(
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit.jpg'))
+        plt.savefig(os.path.join(
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit.pdf'))
+        plt.cla()
     return ents
