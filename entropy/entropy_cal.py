@@ -168,7 +168,7 @@ def entrpy_frame(frame_data, method='SPyr'):
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
-        dog_coef = difference_of_gaussians(frame_data, 133, 200)
+        dog_coef = difference_of_gaussians(frame_data, 60, 90)
 
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(
             dog_coef, blk, sigma_nsq)
