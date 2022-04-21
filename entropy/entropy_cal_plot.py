@@ -99,11 +99,15 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     return entropy
 
 
-def entrpy_frame(frame_data, method='SPyr', vname=None):
-    bname = os.path.basename(vname)[:-4]
-
+def entrpy_frame(frame_data, args=None, vname=None):
     blk = 5
     sigma_nsq = 0.1
+    if args == None:
+        method = 'spyr'
+    else:
+        method = args.band_pass
+    bname = os.path.basename(vname)[:-4]
+
     if method.lower() == 'spyr':
         pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
         subband_keys = []
@@ -196,9 +200,9 @@ def entrpy_frame(frame_data, method='SPyr', vname=None):
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
-        sigma1, sigma2 = 60, 90
-        path1 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame/'
-        path2 = f'./plots/DOG_{sigma1}-{sigma2}_coef_hist/'
+        sigma1, sigma2 = args.dog_param1, args.dog_param2
+        path1 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame_with_{args.nonlinear}/'
+        path2 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame_with_{args.nonlinear}/'
         if not os.path.exists(path1):
             os.makedirs(path1)
         if not os.path.exists(path2):
@@ -219,8 +223,8 @@ def entrpy_frame(frame_data, method='SPyr', vname=None):
         plt.legend()
         plt.title(bname + '_MSCN')
         plt.savefig(os.path.join(
-            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit.jpg'))
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}.jpg'))
         plt.savefig(os.path.join(
-            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit.pdf'))
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}.pdf'))
         plt.cla()
     return ents

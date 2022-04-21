@@ -98,9 +98,13 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     return entropy
 
 
-def entrpy_frame(frame_data, method='SPyr'):
+def entrpy_frame(frame_data, args=None):
     blk = 5
     sigma_nsq = 0.1
+    if args == None:
+        method = 'spyr'
+    else:
+        method = args.band_pass
     if method.lower() == 'spyr':
         pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
         subband_keys = []
@@ -168,7 +172,8 @@ def entrpy_frame(frame_data, method='SPyr'):
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
-        dog_coef = difference_of_gaussians(frame_data, 133, 200)
+        dog_coef = difference_of_gaussians(
+            frame_data, args.dog_param1, args.dog_param2)
 
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(
             dog_coef, blk, sigma_nsq)

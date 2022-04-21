@@ -17,11 +17,15 @@ parser.add_argument(
 parser.add_argument(
     "--parameter", help="the parameter for the nonliear. Use with --nonliear", type=float)
 parser.add_argument(
-    "--band_pass", help="select the bandpass in NSS. Support 'SPyr', 'NS', 'MSCN'.")
+    "--band_pass", help="select the bandpass in NSS. Support 'SPyr', 'NS', 'MSCN', 'DoG'")
 parser.add_argument(
     "--wsize", help="the parameter for the nonliear window size. Use with --nonliear and local transform.", type=float)
 parser.add_argument(
     "--channel", help="indicate which channel to process. Please provide 0, 1, or 2", type=int)
+parser.add_argument(
+    "--dog_param1", help="Dog sigma low", type=int, default=60)
+parser.add_argument(
+    "--dog_param2", help="Dog sigma high", type=int, default=90)
 
 
 if socket.gethostname().find('tacc') > 0:
