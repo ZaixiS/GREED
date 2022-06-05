@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 from skimage.filters import difference_of_gaussians
 from skimage.transform import rescale, resize, downscale_local_mean
 from skvideo.utils.mscn import gen_gauss_window, compute_image_mscn_transform
-
+from skimage.filters import rank
+from skimage.morphology import disk
 
 def compute_MS_transform(image, window, extend_mode='reflect'):
     h, w = image.shape
@@ -97,8 +98,18 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
 
     return entropy
 
+def scale_lhe(coef,args):
+    scale = np.max(coef)
+    coef_1 = coef/scale
+    coef_16 = coef_1*65535
+    coef_16 = coef_16.astype(np.uint16)
+    footprint = disk(args.footprint)
+    img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
+    img_eq_ref = img_eq_ref.astype(np.float32)/65535*scale
+    return img_eq_ref
 
 def entrpy_frame(frame_data, args=None):
+    
     blk = 5
     sigma_nsq = 0.1
     if args == None:
@@ -115,6 +126,8 @@ def entrpy_frame(frame_data, args=None):
         ents = []
         for i, subband_key in enumerate(subband_keys):
             subband_coef = pyr[subband_key]
+            if args.v1lhe:
+                subband_coef = scale_lhe(subband_coef)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 subband_coef, blk, sigma_nsq)
 

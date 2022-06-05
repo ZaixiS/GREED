@@ -26,6 +26,11 @@ parser.add_argument(
     "--dog_param1", help="Dog sigma low", type=int, default=60)
 parser.add_argument(
     "--dog_param2", help="Dog sigma high", type=int, default=90)
+parser.add_argument(
+    "--v1lhe", help="LHE after nonlinear", action='store_true')
+parser.add_argument(
+    "--footprint", help="args.footprint of LHE transform", type=int, default=15)
+parser.set_defaults(v1lhe=False)
 
 
 if socket.gethostname().find('tacc') > 0:
@@ -67,12 +72,18 @@ def process_video(ind):
         df['video'] = bname
         return df
     return
+if args.band_pass.lower()!='dog':
+    outpth = join(
+        out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}')
+else:
+    outpth = join(
+        out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
+if not os.path.exists:
+    os.makedirs(outpth)
+print(outpth)
 
 
 r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
     delayed(process_video)(i) for i in range(len(info)))
 feats = pd.concat(r)
-outpth = join(
-    out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}')
-os.makedirs(outpth)
 feats.to_csv(join(outpth, 'feats.csv'))

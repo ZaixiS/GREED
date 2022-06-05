@@ -1,23 +1,13 @@
-
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 0.5 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -0.5 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 5 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -5 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 2 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -2 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 1 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -1 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear none --parameter 5 --wsize 31 --channel 0 --band_pass MSCN
-python calculate_hdrgreed_features_2022.py --nonlinear equal --parameter -2 --wsize 31 --channel 0 --band_pass MSCN
-
-
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 0.5 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -0.5 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 5 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -5 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 2 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -2 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter 1 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear local_exp --parameter -1 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear none --parameter 5 --wsize 31 --channel 0 --band_pass MS
-python calculate_hdrgreed_features_2022.py --nonlinear equal --parameter -2 --wsize 31 --channel 0 --band_pass MS
+sbatch ./scripts/job_5.script
+sbatch ./scripts/job_8.script
+sbatch ./scripts/job_11.script
+sbatch ./scripts/job_14.script
+sbatch ./scripts/job_17.script
+sbatch ./scripts/job_20.script
+sbatch ./scripts/job_21.script
+sbatch ./scripts/job_22.script
+sbatch ./scripts/job_23.script
+sbatch ./scripts/job_24.script
+sbatch ./scripts/job_25.script
+sbatch ./scripts/job_26.script
+sbatch ./scripts/job_27.script
