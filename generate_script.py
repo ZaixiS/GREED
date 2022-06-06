@@ -17,14 +17,15 @@ for s in spaces:
 #SBATCH -o vmaf{counter}.log
 #SBATCH -J vmaf{counter}
 #SBATCH -p skx-normal
-#SBATCH -t 1:10:00
+#SBATCH -t 2:40:00
 #SBATCH --mail-user=zxshang@utexas.edu
 #SBATCH --mail-type=all
 source ~/anaconda3/bin/activate
 conda activate base
 conda activate hdrvmaf
-python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2}
-
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 15
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 30
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 60
                 """
                     f.write(string)
                     f.close()
@@ -48,14 +49,15 @@ for s in spaces:
 #SBATCH -o vmaf{counter}.log
 #SBATCH -J vmaf{counter}
 #SBATCH -p skx-normal
-#SBATCH -t 2:00:00
+#SBATCH -t 2:40:00
 #SBATCH --mail-user=zxshang@utexas.edu
 #SBATCH --mail-type=all
 source ~/anaconda3/bin/activate
 conda activate base
 conda activate hdrvmaf
-python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2}
-
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 15
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 30
+python calculate_hdrgreed_features_2022.py --nonlinear {n} --parameter {p} --band_pass dog --wsize 31 --channel  0 --dog_param1 {d1} --dog_param2 {d2} --v1lhe --footprint 45
                 """
                     f.write(string)
                     f.close()
