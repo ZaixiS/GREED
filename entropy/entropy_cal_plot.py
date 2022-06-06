@@ -99,7 +99,7 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     return entropy
 
 
-def entrpy_frame(frame_data, args=None, vname=None):
+def entrpy_frame(frame_data, args=None, vname=None, frame_num=None):
     blk = 5
     sigma_nsq = 0.1
     if args == None:
@@ -144,7 +144,7 @@ def entrpy_frame(frame_data, args=None, vname=None):
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             MS_frame = compute_MS_transform(image_rescaled, window)
-            plt.imsave(os.path.join(path1, bname+'.jpg'),
+            plt.imsave(os.path.join(path1, bname+f'_fn_{frame_num}.jpg'),
                        MS_frame, cmap='gray')
             im = plt.hist(MS_frame.flatten(), bins=1900,
                           range=[-0.001, 0.001], density=True, label='MS coefficient')
@@ -156,8 +156,8 @@ def entrpy_frame(frame_data, args=None, vname=None):
             plt.plot(x, ggd, label=f'ggd fit,alpha={alphaparam}')
             plt.legend()
             plt.title(bname + '_MS')
-            plt.savefig(os.path.join(path2, bname+'.jpg'))
-            plt.savefig(os.path.join(path2, bname+'.pdf'))
+            plt.savefig(os.path.join(path2, bname+f'_fn_{frame_num}.jpg'))
+            plt.savefig(os.path.join(path2, bname+f'_fn_{frame_num}.pdf'))
             plt.cla()
             return
 
@@ -193,8 +193,10 @@ def entrpy_frame(frame_data, args=None, vname=None):
             plt.plot(x, ggd, label=f'ggd fit,alpha={alphaparam}')
             plt.legend()
             plt.title(bname + '_MSCN')
-            plt.savefig(os.path.join(path2, bname+'_MSCNGGDfit.jpg'))
-            plt.savefig(os.path.join(path2, bname+'_MSCNGGDfit.pdf'))
+            plt.savefig(os.path.join(
+                path2, bname+f'_fn_{frame_num}_MSCNGGDfit.jpg'))
+            plt.savefig(os.path.join(
+                path2, bname+f'_fn_{frame_num}_MSCNGGDfit.pdf'))
             plt.cla()
             return
     elif method.lower() == 'dog':
@@ -202,7 +204,7 @@ def entrpy_frame(frame_data, args=None, vname=None):
         ents = []
         sigma1, sigma2 = args.dog_param1, args.dog_param2
         path1 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame_with_{args.nonlinear}/'
-        path2 = f'./plots/DOG_{sigma1}-{sigma2}_coef_frame_with_{args.nonlinear}/'
+        path2 = f'./plots/DOG_{sigma1}-{sigma2}_coef_hist_with_{args.nonlinear}/'
         if not os.path.exists(path1):
             os.makedirs(path1)
         if not os.path.exists(path2):
@@ -210,7 +212,7 @@ def entrpy_frame(frame_data, args=None, vname=None):
         dog_coef = difference_of_gaussians(frame_data, sigma1, sigma2)
         im = plt.hist(dog_coef.flatten(), bins=1900,
                       density=True, label='MSCN coefficient')
-        plt.imsave(os.path.join(path1, bname+'.jpg'),
+        plt.imsave(os.path.join(path1, bname+f'_DOG_{sigma1}-{sigma2}_coef_with_{args.nonlinear}_fn_{frame_num}.jpg'),
                    dog_coef, cmap='gray')
         # im = plt.hist(mscn1.flatten(), bins=1900,
         #               density=True, label='MS coefficient')
@@ -223,8 +225,8 @@ def entrpy_frame(frame_data, args=None, vname=None):
         plt.legend()
         plt.title(bname + '_MSCN')
         plt.savefig(os.path.join(
-            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}.jpg'))
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}_fn_{frame_num}.jpg'))
         plt.savefig(os.path.join(
-            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}.pdf'))
+            path2, bname+f'_DOG_{sigma1}-{sigma2}_GGDfit_with_{args.nonlinear}_fn_{frame_num}.pdf'))
         plt.cla()
     return ents
