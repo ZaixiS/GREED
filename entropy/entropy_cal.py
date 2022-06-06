@@ -104,7 +104,7 @@ def scale_lhe(coef,args):
     coef_16 = coef_1*65535
     coef_16 = coef_16.astype(np.uint16)
     footprint = disk(args.footprint)
-    img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
+    img_eq_ref = rank.equalize(coef_16, selem=footprint)
     img_eq_ref = img_eq_ref.astype(np.float32)/65535*scale
     return img_eq_ref
 
@@ -127,7 +127,7 @@ def entrpy_frame(frame_data, args=None):
         for i, subband_key in enumerate(subband_keys):
             subband_coef = pyr[subband_key]
             if args.v1lhe:
-                subband_coef = scale_lhe(subband_coef)
+                subband_coef = scale_lhe(subband_coef,args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 subband_coef, blk, sigma_nsq)
 
@@ -148,7 +148,8 @@ def entrpy_frame(frame_data, args=None):
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             MS_frame = compute_MS_transform(image_rescaled, window)
-
+            if args.v1lhe:
+                MS_frame = scale_lhe(MS_frame,args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 MS_frame, blk, sigma_nsq)
             spatial_sig_frame = np.array(spatial_sig_frame)
@@ -169,7 +170,8 @@ def entrpy_frame(frame_data, args=None):
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             mscn1, var, mu = compute_image_mscn_transform(
                 image_rescaled, extend_mode='nearest')
-
+            if args.v1lhe:
+                mscn1 = scale_lhe(mscn1,args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 mscn1, blk, sigma_nsq)
             spatial_sig_frame = np.array(spatial_sig_frame)
@@ -188,7 +190,8 @@ def entrpy_frame(frame_data, args=None):
 
         dog_coef = difference_of_gaussians(
             frame_data, args.dog_param1, args.dog_param2)
-
+        if args.v1lhe:
+            dog_coef = scale_lhe(dog_coef,args)
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(
             dog_coef, blk, sigma_nsq)
         spatial_sig_frame = np.array(spatial_sig_frame)

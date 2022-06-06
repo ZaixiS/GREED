@@ -29,20 +29,26 @@ parser.add_argument(
 parser.add_argument(
     "--v1lhe", help="LHE after nonlinear", action='store_true')
 parser.add_argument(
-    "--footprint", help="args.footprint of LHE transform", type=int, default=15)
+    "--footprint", help="footprint of LHE transform", type=int, default=15)
 parser.set_defaults(v1lhe=False)
 
 
 if socket.gethostname().find('tacc') > 0:
     scratch = os.environ['SCRATCH']
-    vid_pth = '/scratch/06776/kmd1995/video/HDR_2022_SPRING_yuv'
+    vid_pth = '/scratch/06776/kmd1995/video/HDR_2022_SPRING_yuv_updated'
     out_root = join(scratch, 'feats_sp2022/feats_hdrgreed/')
 
 
 elif socket.gethostname().find('a51969') > 0:  # Odin
-    vid_pth = '/media/nebula_livelab2/josh/HDR_2022_SPRING_yuv'
+    vid_pth = '/media/nebula_livelab2/josh/HDR_2022_SPRING_yuv_updated'
     out_root_vif = '/media/zaixi/zaixi_nas/HDRproject/feats/hdrvifnew_2022/vif'
     out_root_dlm = '/media/zaixi/zaixi_nas/HDRproject/feats/hdrdlmnew_2022/dlm'
+
+
+elif socket.gethostname().find('a51999') > 0:  # Odin
+    vid_pth = '/media/nebula_livelab2/josh/HDR_2022_SPRING_yuv_updated'
+    out_root = './temp_feat/'
+
 
 # elif socket.gethostname().find('895095')>0: #DarthVader
 #     vid_pth = '/media/josh/seagate/hdr_videos/fall2021_hdr_upscaled_yuv/'
@@ -73,17 +79,27 @@ def process_video(ind):
         return df
     return
 if args.band_pass.lower()!='dog':
-    outpth = join(
-        out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}')
+    if args.v1lhe:
+        outpth = join(
+            out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}_v1lhe_{args.footprint}')
+    else:
+        outpth = join(
+            out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}')
+
 else:
-    outpth = join(
-        out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
+    if args.v1lhe:
+        outpth = join(
+            out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}_v1lhe_{args.footprint}')
+    else:
+        outpth = join(
+            out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
+  
 if not os.path.exists:
     os.makedirs(outpth)
 print(outpth)
 
 
-r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
+r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
     delayed(process_video)(i) for i in range(len(info)))
 feats = pd.concat(r)
 feats.to_csv(join(outpth, 'feats.csv'))
