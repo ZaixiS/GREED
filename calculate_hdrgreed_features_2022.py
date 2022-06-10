@@ -94,12 +94,15 @@ else:
         outpth = join(
             out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
   
-if not os.path.exists:
+if not os.path.exists(outpth):
     os.makedirs(outpth)
 print(outpth)
 
-
-r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
-    delayed(process_video)(i) for i in range(len(info)))
-feats = pd.concat(r)
-feats.to_csv(join(outpth, 'feats.csv'))
+file = join(outpth, 'feats.csv')
+if not os.path.exists(file):
+    r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
+        delayed(process_video)(i) for i in range(len(info)))
+    feats = pd.concat(r)
+    feats.to_csv(join(outpth, 'feats.csv'))
+else:
+    print('found')

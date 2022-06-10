@@ -100,12 +100,16 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
 
 def scale_lhe(coef,args):
     scale = np.max(coef)
-    coef_1 = coef/scale
-    coef_16 = coef_1*65535
+    scale_neg = np.min(coef)
+    # print(scale_neg)
+    coef_1 = (coef-scale_neg)/(scale-scale_neg)
+    # print('max coef 1 ',np.max(coef_1))
+    coef_16 = coef_1*1023
     coef_16 = coef_16.astype(np.uint16)
+    # print(np.max(coef_16))
     footprint = disk(args.footprint)
     img_eq_ref = rank.equalize(coef_16, selem=footprint)
-    img_eq_ref = img_eq_ref.astype(np.float32)/65535*scale
+    img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
     return img_eq_ref
 
 def entrpy_frame(frame_data, args=None):
