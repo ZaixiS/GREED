@@ -106,14 +106,14 @@ def scale_lhe(coef,args):
     # print('max coef 1 ',np.max(coef_1))
     coef_16 = coef_1*1023
     coef_16 = coef_16.astype(np.uint16)
-    # print(np.max(coef_16))
+    print(np.max(coef_16))
     footprint = disk(args.footprint)
     img_eq_ref = rank.equalize(coef_16, selem=footprint)
-    img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
+    # img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
     return img_eq_ref
 
-def entrpy_frame(frame_data, args=None):
-    
+def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
+    vid_name = os.path.basename(vid_name)
     blk = 5
     sigma_nsq = 0.1
     if args == None:
@@ -176,8 +176,27 @@ def entrpy_frame(frame_data, args=None):
                 image_rescaled, extend_mode='nearest')
             if args.v1lhe:
                 mscn1 = scale_lhe(mscn1,args)
+
+            # create an output path and save mscn1 as jpg to see the result
+            path_images = './images/'
+            if not os.path.exists(path_images):
+                os.makedirs(path_images)
+            filename = os.path.join(path_images, f"{vid_name}_{frame_ind}_mscn1_{scale_factor}.jpg")
+            plt.imsave(filename, mscn1, cmap='gray')
+
+            # create an output path and save the histogram of mscn1 to see the result
+            path_images = './images_histogram/'
+            if not os.path.exists(path_images):
+                os.makedirs(path_images)
+            filename = os.path.join(path_images,  f"{vid_name}_{frame_ind}_mscn1_histogram_{scale_factor}.jpg")
+            plt.hist(mscn1.ravel(), bins=256,range=(0,1022))
+            plt.savefig(filename,dpi = 300)
+            plt.cla()
+            
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 mscn1, blk, sigma_nsq)
+
+
             spatial_sig_frame = np.array(spatial_sig_frame)
             spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
 

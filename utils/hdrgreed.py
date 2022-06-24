@@ -19,7 +19,7 @@ def cal_difference_by_band(ref_ent, dis_ent):
 def hdr_greed(ref_name, dis_name, framenum, args):
     h = 2160  # hs[dis_index]
     w = 3840  # ws[dis_index]
-    skip = 25
+    skip = 100
     now = datetime.now()
 
     current_time = now.strftime("%H:%M:%S")
@@ -82,16 +82,16 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         else:
-            ref_ent_none = entrpy_frame(ref_singlechannel, args)
+            ref_ent_none = entrpy_frame(ref_singlechannel, args,ref_name,framenum)
 
-            dis_ent_none = entrpy_frame(dis_singlechannel, args)
-            ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
+            dis_ent_none = entrpy_frame(dis_singlechannel, args,dis_name,framenum)
+            # ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
 
-        feats.append(ent_diff_1)
-    feats = np.stack(feats)
-    feats = feats.mean(axis=0)
-    now = datetime.now()
+    #     # feats.append(ent_diff_1)
+    # feats = np.stack(feats)
+    # feats = feats.mean(axis=0)
+    # now = datetime.now()
 
-    current_time = now.strftime("%H:%M:%S")
-    print("Finish Time =", current_time)
-    return feats
+    # current_time = now.strftime("%H:%M:%S")
+    # print("Finish Time =", current_time)
+    return [0]

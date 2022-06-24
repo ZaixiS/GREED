@@ -45,8 +45,8 @@ elif socket.gethostname().find('a51969') > 0:  # Odin
     out_root_dlm = '/media/zaixi/zaixi_nas/HDRproject/feats/hdrdlmnew_2022/dlm'
 
 
-elif socket.gethostname().find('a51999') > 0:  # Odin
-    vid_pth = '/media/nebula_livelab2/josh/HDR_2022_SPRING_yuv_updated'
+elif socket.gethostname().find('a51999') > 0:  # Diaochan
+    vid_pth = '/mnt/31393986-51f4-4175-8683-85582af93b23/videos/HDR_2022_SPRING_yuv_update'
     out_root = './temp_feat/'
 
 
@@ -93,14 +93,14 @@ else:
     else:
         outpth = join(
             out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
-  
+
 if not os.path.exists(outpth):
     os.makedirs(outpth)
 print(outpth)
 
 file = join(outpth, 'feats.csv')
 if not os.path.exists(file):
-    r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
+    r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
         delayed(process_video)(i) for i in range(len(info)))
     feats = pd.concat(r)
     feats.to_csv(join(outpth, 'feats.csv'))
