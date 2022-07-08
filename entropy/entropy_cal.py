@@ -30,7 +30,7 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
     filt_path = 'WPT_Filters/' + filt + '_wpt_' + str(num_levels) + '.mat'
     wfun = scipy.io.loadmat(filt_path)
     wfun = wfun['wfun']
-
+    
     blk = 5
     sigma_nsq = 0.1
     win_len = 7
@@ -109,7 +109,7 @@ def scale_lhe(coef,args):
     # print(np.max(coef_16))
     footprint = disk(args.footprint)
     img_eq_ref = rank.equalize(coef_16, selem=footprint)
-    img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
+    # img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
     return img_eq_ref
 
 def entrpy_frame(frame_data, args=None):
@@ -203,6 +203,97 @@ def entrpy_frame(frame_data, args=None):
 
         spatial_ent_frame = np.array(spatial_ent_frame)
         spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
+
+        spatial_ent_scaled = np.log(
+            1 + spatial_sig_frame**2) * spatial_ent_frame
+        ents.append(spatial_ent_scaled)
+    return ents
+
+
+
+def feature_frame(frame_data, args=None):
+    
+    blk = 5
+    sigma_nsq = 0.1
+    if args == None:
+        method = 'spyr'
+    else:
+        method = args.band_pass
+    if method.lower() == 'spyr':
+        pyr = SPyr(frame_data, 4, 5, 'reflect1').pyr_coeffs
+        subband_keys = []
+        for key in list(pyr.keys())[1:-2:3]:
+            subband_keys.append(key)
+        subband_keys.reverse()
+
+        ents = []
+        for i, subband_key in enumerate(subband_keys):
+            subband_coef = pyr[subband_key]
+            if args.v1lhe:
+                subband_coef = scale_lhe(subband_coef,args)
+            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
+                subband_coef, blk, sigma_nsq)
+
+            spatial_sig_frame = np.array(spatial_sig_frame)
+            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+
+            spatial_ent_frame = np.array(spatial_ent_frame)
+            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
+            spatial_ent_scaled = np.log(
+                1 + spatial_sig_frame**2) * spatial_ent_frame
+            ents.append(spatial_ent_scaled)
+        return ents
+    elif method.lower() == 'ms':
+        win_len = 7
+        ents = []
+        for scale_factor in range(4):
+            image_rescaled = rescale(
+                frame_data, 0.5**scale_factor, anti_aliasing=True)
+            window = gen_gauss_window((win_len-1)/2, win_len/6)
+            MS_frame = compute_MS_transform(image_rescaled, window)
+            if args.v1lhe:
+                MS_frame = scale_lhe(MS_frame,args)
+            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
+                MS_frame, blk, sigma_nsq)
+            spatial_sig_frame = np.array(spatial_sig_frame)
+            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+
+            spatial_ent_frame = np.array(spatial_ent_frame)
+            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
+
+            spatial_ent_scaled = np.log(
+                1 + spatial_sig_frame**2) * spatial_ent_frame
+            ents.append(spatial_ent_scaled)
+    elif method.lower() == 'mscn':
+        win_len = 7
+        stds = []
+        for scale_factor in range(4):
+            image_rescaled = rescale(
+                frame_data, 0.5**scale_factor, anti_aliasing=True)
+            window = gen_gauss_window((win_len-1)/2, win_len/6)
+            mscn1, var, mu = compute_image_mscn_transform(
+                image_rescaled, extend_mode='nearest')
+            if args.v1lhe:
+                mscn1 = scale_lhe(mscn1,args)
+            # calculate the histogram of the mscn1
+            mscn1_hist = np.histogram(mscn1, bins=100, range=(0,1010))
+            stds.append(np.std(mscn1_hist[0]))
+        return stds  
+    elif method.lower() == 'dog':
+        win_len = 7
+        ents = []
+
+        dog_coef = difference_of_gaussians(
+            frame_data, args.dog_param1, args.dog_param2)
+        if args.v1lhe:
+            dog_coef = scale_lhe(dog_coef,args)
+        spatial_sig_frame, spatial_ent_frame = est_params_ggd(
+            dog_coef, blk, sigma_nsq)
+        spatial_sig_frame = np.array(spatial_sig_frame)
+        spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+
+        spatial_ent_frame = np.array(spatial_ent_frame)
+        spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0 
 
         spatial_ent_scaled = np.log(
             1 + spatial_sig_frame**2) * spatial_ent_frame

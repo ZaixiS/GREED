@@ -74,8 +74,8 @@ def process_video(ind):
 
         feats = hdr_greed(join(vid_pth, video),
                           join(vid_pth, ref), fcount, args)
-        df = pd.DataFrame(feats).transpose()
-        df['video'] = bname
+        df = pd.DataFrame(feats)
+        df['video'] = [ref, video]
         return df
     return
 if args.band_pass.lower()!='dog':
@@ -100,7 +100,7 @@ print(outpth)
 
 file = join(outpth, 'feats.csv')
 if not os.path.exists(file):
-    r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
+    r = Parallel(n_jobs=100, verbose=1, backend="multiprocessing")(
         delayed(process_video)(i) for i in range(len(info)))
     feats = pd.concat(r)
     feats.to_csv(join(outpth, 'feats.csv'))
