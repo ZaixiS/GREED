@@ -78,7 +78,9 @@ def process_video(ind):
         df['video'] = bname
         return df
     return
-if args.band_pass.lower()!='dog':
+
+
+if args.band_pass.lower() != 'dog':
     if args.v1lhe:
         outpth = join(
             out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}_v1lhe_{args.footprint}')
@@ -93,7 +95,7 @@ else:
     else:
         outpth = join(
             out_root, f'greed_{args.nonlinear}_{args.parameter}_w{args.wsize}_c{args.channel}_band{args.band_pass}-{args.dog_param1}-{args.dog_param2}')
-  
+
 if not os.path.exists(outpth):
     os.makedirs(outpth)
 print(outpth)

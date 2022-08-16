@@ -1,6 +1,6 @@
 import argparse
 from utils.HDR_functions import hdr_yuv_read, local_exp, global_exp
-from entropy.entropy_cal import entrpy_frame
+from entropy.entropy_cal_lhe_spyr import entrpy_frame
 from entropy.entropy_params import estimate_ggdparam, generate_ggd
 import pandas as pd
 import numpy as np
