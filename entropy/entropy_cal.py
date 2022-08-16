@@ -14,6 +14,8 @@ from skimage.transform import rescale, resize, downscale_local_mean
 from skvideo.utils.mscn import gen_gauss_window, compute_image_mscn_transform
 from skimage.filters import rank
 from skimage.morphology import disk
+from skimage.util import random_noise
+
 
 def compute_MS_transform(image, window, extend_mode='reflect'):
     h, w = image.shape
@@ -98,7 +100,8 @@ def video_process(vid_path, width, height, bit_depth, gray, T, filt, num_levels,
 
     return entropy
 
-def scale_lhe(coef,args):
+
+def scale_lhe(coef, args):
     scale = np.max(coef)
     scale_neg = np.min(coef)
     # print(scale_neg)
@@ -112,7 +115,10 @@ def scale_lhe(coef,args):
     # img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
     return img_eq_ref
 
-def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
+
+def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
+    # if not vid_name.find('AERO-00h13m10s_res2160_mu100000_sigma0_rate100000_') > -1:
+    #     return 0
     vid_name = os.path.basename(vid_name)
     blk = 5
     sigma_nsq = 0.1
@@ -131,7 +137,7 @@ def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
         for i, subband_key in enumerate(subband_keys):
             subband_coef = pyr[subband_key]
             if args.v1lhe:
-                subband_coef = scale_lhe(subband_coef,args)
+                subband_coef = scale_lhe(subband_coef, args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 subband_coef, blk, sigma_nsq)
 
@@ -153,7 +159,7 @@ def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             MS_frame = compute_MS_transform(image_rescaled, window)
             if args.v1lhe:
-                MS_frame = scale_lhe(MS_frame,args)
+                MS_frame = scale_lhe(MS_frame, args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 MS_frame, blk, sigma_nsq)
             spatial_sig_frame = np.array(spatial_sig_frame)
@@ -168,34 +174,47 @@ def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
     elif method.lower() == 'mscn':
         win_len = 7
         ents = []
+
+        path_frame = './image_noise/'
+        if not os.path.exists(path_frame):
+            os.makedirs(path_frame)
+        filename = os.path.join(
+            path_frame, f"{vid_name}_{frame_ind}_mscn1_.jpg")
+        plt.imsave(filename, frame_data, cmap='gray')
         for scale_factor in range(4):
             image_rescaled = rescale(
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             mscn1, var, mu = compute_image_mscn_transform(
                 image_rescaled, extend_mode='nearest')
+
+            mscn1 = mscn1/np.max(mscn1)
+            mscn1 = random_noise(
+                mscn1, mode='gaussian', var=0.0001)
+
             if args.v1lhe:
-                mscn1 = scale_lhe(mscn1,args)
+                mscn1 = scale_lhe(mscn1, args)
 
             # create an output path and save mscn1 as jpg to see the result
-            path_images = './images/'
+            path_images = './image_noise/'
             if not os.path.exists(path_images):
                 os.makedirs(path_images)
-            filename = os.path.join(path_images, f"{vid_name}_{frame_ind}_mscn1_{scale_factor}.jpg")
+            filename = os.path.join(
+                path_images, f"{vid_name}_{frame_ind}_mscn1_{scale_factor}.jpg")
             plt.imsave(filename, mscn1, cmap='gray')
 
             # create an output path and save the histogram of mscn1 to see the result
-            path_images = './images_histogram/'
+            path_images = './image_noise/'
             if not os.path.exists(path_images):
                 os.makedirs(path_images)
-            filename = os.path.join(path_images,  f"{vid_name}_{frame_ind}_mscn1_histogram_{scale_factor}.jpg")
-            plt.hist(mscn1.ravel(), bins=256,range=(0,1022))
-            plt.savefig(filename,dpi = 300)
+            filename = os.path.join(
+                path_images,  f"{vid_name}_{frame_ind}_mscn1_histogram_{scale_factor}.jpg")
+            plt.hist(mscn1.ravel(), bins=100, range=(0, 1022))
+            plt.savefig(filename, dpi=300)
             plt.cla()
-            
+
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 mscn1, blk, sigma_nsq)
-
 
             spatial_sig_frame = np.array(spatial_sig_frame)
             spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
@@ -214,7 +233,7 @@ def entrpy_frame(frame_data, args=None,vid_name=None,frame_ind=None):
         dog_coef = difference_of_gaussians(
             frame_data, args.dog_param1, args.dog_param2)
         if args.v1lhe:
-            dog_coef = scale_lhe(dog_coef,args)
+            dog_coef = scale_lhe(dog_coef, args)
         spatial_sig_frame, spatial_ent_frame = est_params_ggd(
             dog_coef, blk, sigma_nsq)
         spatial_sig_frame = np.array(spatial_sig_frame)
