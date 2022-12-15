@@ -35,8 +35,8 @@ parser.set_defaults(v1lhe=False)
 
 if socket.gethostname().find('tacc') > 0:
     scratch = os.environ['SCRATCH']
-    vid_pth = '/scratch/06776/kmd1995/video/HDR_2022_SPRING_yuv_updated'
-    out_root = join(scratch, 'feats_sp2022/feats_hdrgreed/')
+    vid_pth = join(scratch, 'video/LIVE_AQ/yuv')
+    out_root = join(scratch, 'video/LIVE_AQ/features/hdrgreed')
 
 
 elif socket.gethostname().find('a51969') > 0:  # Odin
