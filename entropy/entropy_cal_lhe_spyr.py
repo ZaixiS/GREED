@@ -1,3 +1,5 @@
+# try add spyr after lhe
+
 import numpy as np
 from entropy.yuvRead import yuvRead_frame
 import os
@@ -14,7 +16,6 @@ from skimage.transform import rescale, resize, downscale_local_mean
 from skvideo.utils.mscn import gen_gauss_window, compute_image_mscn_transform
 from skimage.filters import rank
 from skimage.morphology import disk
-from skimage.util import random_noise
 
 
 def compute_MS_transform(image, window, extend_mode='reflect'):
@@ -109,16 +110,14 @@ def scale_lhe(coef, args):
     # print('max coef 1 ',np.max(coef_1))
     coef_16 = coef_1*1023
     coef_16 = coef_16.astype(np.uint16)
-    print(np.max(coef_16))
+    # print(np.max(coef_16))
     footprint = disk(args.footprint)
     img_eq_ref = rank.equalize(coef_16, selem=footprint)
-    # img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
+    img_eq_ref = img_eq_ref.astype(np.float32)/1023*(scale-scale_neg)+scale_neg
     return img_eq_ref
 
 
 def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
-    # if not vid_name.find('AERO-00h13m10s_res2160_mu100000_sigma0_rate100000_') > -1:
-    #     return 0
     vid_name = os.path.basename(vid_name)
     blk = 5
     sigma_nsq = 0.1
@@ -175,21 +174,79 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
         win_len = 7
         ents = []
 
-        for scale_factor in range(4):
-            image_rescaled = rescale(
-                frame_data, 0.5**scale_factor, anti_aliasing=True)
-            window = gen_gauss_window((win_len-1)/2, win_len/6)
-            mscn1, var, mu = compute_image_mscn_transform(
-                image_rescaled, extend_mode='nearest')
+        window = gen_gauss_window((win_len-1)/2, win_len/6)
+        mscn1, var, mu = compute_image_mscn_transform(
+            frame_data, extend_mode='nearest')
+
+        # path_frame = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_coef/'
+        # if not os.path.exists(path_frame):
+            # os.makedirs(path_frame)
+        # filename = os.path.join(
+            # path_frame, f"{vid_name}_{frame_ind}_mscn_.jpg")
+        # plt.imsave(filename, mscn1, cmap='gray')
+
+        # path_images = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_histo'
+        # if not os.path.exists(path_images):
+            # os.makedirs(path_images)
+        # filename = os.path.join(
+            # path_images,  f"{vid_name}_{frame_ind}_mscn1_coef_.jpg")
+        # plt.hist(mscn1.ravel(), bins=800)
+        # plt.savefig(filename, dpi=300)
+        # plt.cla()
+
+        if args.v1lhe:
+            mscn1 = scale_lhe(mscn1, args)
+        # path_frame = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_lhe_coef/'
+        # if not os.path.exists(path_frame):
+            # os.makedirs(path_frame)
+        # filename = os.path.join(
+            # path_frame, f"{vid_name}_{frame_ind}_mscn_.jpg")
+        # plt.imsave(filename, mscn1, cmap='gray')
+
+        # path_images = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_lhe_histo'
+        # if not os.path.exists(path_images):
+        #     os.makedirs(path_images)
+        # filename = os.path.join(
+        #     path_images,  f"{vid_name}_{frame_ind}_mscn1_lhe_coef_.jpg")
+        # plt.hist(mscn1.ravel(), bins=800)
+        # plt.savefig(filename, dpi=300)
+        # plt.cla()
+
+        pyr = SPyr(mscn1, 4, 5, 'reflect1').pyr_coeffs
+        subband_keys = []
+        for key in list(pyr.keys())[1:-2:3]:
+            subband_keys.append(key)
+        subband_keys.reverse()
+
+        ents = []
+        for i, subband_key in enumerate(subband_keys):
+            subband_coef = pyr[subband_key]
+
+            # path_images = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_lhe_spyr_histo'
+            # if not os.path.exists(path_images):
+            #     os.makedirs(path_images)
+            # filename = os.path.join(
+            #     path_images,  f"{vid_name}_{frame_ind}_mscn1_spyr_coef_{i}.jpg")
+            # plt.hist(subband_coef.ravel(), bins=800)
+            # plt.savefig(filename, dpi=300)
+            # plt.cla()
+
+            # coef_path_frame = '/home/zs5397/code/GREED/image_mscn_lhe_spyr/mscn_lhe_spyr_coef/'
+            # if not os.path.exists(coef_path_frame):
+            #     os.makedirs(coef_path_frame)
+            # filename = os.path.join(
+            #     coef_path_frame, f"{vid_name}_{frame_ind}_spyr_coef_{i}_.jpg")
+
+            # plt.imsave(filename, subband_coef, cmap='gray')
+
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
-                mscn1, blk, sigma_nsq)
+                subband_coef, blk, sigma_nsq)
 
             spatial_sig_frame = np.array(spatial_sig_frame)
             spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
 
             spatial_ent_frame = np.array(spatial_ent_frame)
             spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-
             spatial_ent_scaled = np.log(
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)

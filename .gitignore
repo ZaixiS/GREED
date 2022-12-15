@@ -6,3 +6,5 @@ plots
 *.log
 task*.sh
 *.script
+*.pkl
+*.csv

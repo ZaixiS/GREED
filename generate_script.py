@@ -2,15 +2,15 @@ spaces = ['ycbcr']
 channels = [0]
 nonlinear = ['local_exp']
 counter = 0
-parameters = [-0.5,0.5,1,-1,2,-2,5,-5]
-dog_param = [[30,45],[60,90],[133,200]]
+parameters = [-0.5, 0.5, 1, -1, 2, -2, 5, -5]
+dog_param = [[30, 45], [60, 90], [133, 200]]
 for s in spaces:
     for c in channels:
         for n in nonlinear:
             for p in parameters:
-                for d1,d2 in dog_param: 
+                for d1, d2 in dog_param:
                     f = open(f"./scripts/job_{counter}.script", "w")
-                        
+
                     string = f"""#!/bin/bash
 #SBATCH -N 2
 #SBATCH -n 90
@@ -35,14 +35,14 @@ spaces = ['ycbcr']
 channels = [0]
 nonlinear = ['none']
 parameters = [0]
-dog_param = [[30,45],[60,90],[133,200]]
+dog_param = [[30, 45], [60, 90], [133, 200]]
 for s in spaces:
     for c in channels:
         for n in nonlinear:
             for p in parameters:
-                for d1,d2 in dog_param: 
+                for d1, d2 in dog_param:
                     f = open(f"./scripts/job_{counter}.script", "w")
-                        
+
                     string = f"""#!/bin/bash
 #SBATCH -N 2
 #SBATCH -n 90

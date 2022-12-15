@@ -1,11 +1,11 @@
 import argparse
 from utils.HDR_functions import hdr_yuv_read, local_exp, global_exp
-from entropy.entropy_cal import entrpy_frame
+from entropy.entropy_cal_lhe_spyr import entrpy_frame
 from entropy.entropy_params import estimate_ggdparam, generate_ggd
 import pandas as pd
 import numpy as np
 import pdb
-
+import os
 from matplotlib.pyplot import imsave
 from skimage.filters import rank
 from skimage.morphology import disk
@@ -16,10 +16,10 @@ def cal_difference_by_band(ref_ent, dis_ent):
     return np.array([np.abs((ref_ent[i]-dis_ent[i])).mean() for i in range(len(ref_ent))])
 
 
-def hdr_greed(ref_name, dis_name, framenum, args):
+def hdr_greed(dis_name, ref_name, framenum, args):
     h = 2160  # hs[dis_index]
     w = 3840  # ws[dis_index]
-    skip = 100
+    skip = 25
     now = datetime.now()
 
     current_time = now.strftime("%H:%M:%S")
@@ -74,24 +74,27 @@ def hdr_greed(ref_name, dis_name, framenum, args):
             ref_singlechannel = ref_singlechannel.astype(np.uint16)
             dis_singlechannel = dis_singlechannel.astype(np.uint16)
 
-            img_eq_ref = rank.equalize(ref_singlechannel, selem=footprint)
-            img_eq_dis = rank.equalize(dis_singlechannel, selem=footprint)
+            img_eq_ref = rank.equalize(ref_singlechannel, footprint=footprint)
+            img_eq_dis = rank.equalize(dis_singlechannel, footprint=footprint)
 
-            ref_ent_1 = entrpy_frame(img_eq_ref, args)
-            dis_ent_1 = entrpy_frame(img_eq_dis, args)
+            ref_ent_1 = entrpy_frame(img_eq_ref, args, ref_name, framenum)
+            dis_ent_1 = entrpy_frame(img_eq_dis, args, dis_name, framenum)
             ent_diff_1 = cal_difference_by_band(ref_ent_1, dis_ent_1)
 
         else:
-            ref_ent_none = entrpy_frame(ref_singlechannel, args,ref_name,framenum)
+            ref_ent_none = entrpy_frame(
+                ref_singlechannel, args, ref_name, framenum)
 
-            dis_ent_none = entrpy_frame(dis_singlechannel, args,dis_name,framenum)
-            # ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
+            dis_ent_none = entrpy_frame(
+                dis_singlechannel, args, dis_name, framenum)
+            ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
 
-    #     # feats.append(ent_diff_1)
-    # feats = np.stack(feats)
-    # feats = feats.mean(axis=0)
+            feats.append(ent_diff_1)
+    feats = np.stack(feats)
+    feats = feats.mean(axis=0)
     # now = datetime.now()
-
+    feats = pd.DataFrame(feats).transpose()
+    feats['video'] = os.path.basename(dis_name)
     # current_time = now.strftime("%H:%M:%S")
     # print("Finish Time =", current_time)
-    return [0]
+    return feats

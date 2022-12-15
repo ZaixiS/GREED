@@ -175,12 +175,44 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
         win_len = 7
         ents = []
 
+        path_frame = './image_noise/'
+        if not os.path.exists(path_frame):
+            os.makedirs(path_frame)
+        filename = os.path.join(
+            path_frame, f"{vid_name}_{frame_ind}_mscn1_.jpg")
+        plt.imsave(filename, frame_data, cmap='gray')
         for scale_factor in range(4):
             image_rescaled = rescale(
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
             mscn1, var, mu = compute_image_mscn_transform(
                 image_rescaled, extend_mode='nearest')
+
+            mscn1 = mscn1/np.max(mscn1)
+            mscn1 = random_noise(
+                mscn1, mode='gaussian', var=0.0001)
+
+            if args.v1lhe:
+                mscn1 = scale_lhe(mscn1, args)
+
+            # create an output path and save mscn1 as jpg to see the result
+            path_images = './image_noise/'
+            if not os.path.exists(path_images):
+                os.makedirs(path_images)
+            filename = os.path.join(
+                path_images, f"{vid_name}_{frame_ind}_mscn1_{scale_factor}.jpg")
+            plt.imsave(filename, mscn1, cmap='gray')
+
+            # create an output path and save the histogram of mscn1 to see the result
+            path_images = './image_noise/'
+            if not os.path.exists(path_images):
+                os.makedirs(path_images)
+            filename = os.path.join(
+                path_images,  f"{vid_name}_{frame_ind}_mscn1_histogram_{scale_factor}.jpg")
+            plt.hist(mscn1.ravel(), bins=100, range=(0, 1022))
+            plt.savefig(filename, dpi=300)
+            plt.cla()
+
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
                 mscn1, blk, sigma_nsq)
 
@@ -198,23 +230,19 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
         win_len = 7
         ents = []
 
-        for scale_factor in [0, 1, 2, 3, 4, 5, 6]:
-            image_rescaled = rescale(
-                frame_data, 0.5**scale_factor, anti_aliasing=True)
+        dog_coef = difference_of_gaussians(
+            frame_data, args.dog_param1, args.dog_param2)
+        if args.v1lhe:
+            dog_coef = scale_lhe(dog_coef, args)
+        spatial_sig_frame, spatial_ent_frame = est_params_ggd(
+            dog_coef, blk, sigma_nsq)
+        spatial_sig_frame = np.array(spatial_sig_frame)
+        spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
 
-            dog_coef = difference_of_gaussians(
-                frame_data, args.dog_param1, args.dog_param2)
-            if args.v1lhe:
-                dog_coef = scale_lhe(dog_coef, args)
-            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
-                dog_coef, blk, sigma_nsq)
-            spatial_sig_frame = np.array(spatial_sig_frame)
-            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+        spatial_ent_frame = np.array(spatial_ent_frame)
+        spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
 
-            spatial_ent_frame = np.array(spatial_ent_frame)
-            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
-
-            spatial_ent_scaled = np.log(
-                1 + spatial_sig_frame**2) * spatial_ent_frame
-            ents.append(spatial_ent_scaled)
+        spatial_ent_scaled = np.log(
+            1 + spatial_sig_frame**2) * spatial_ent_frame
+        ents.append(spatial_ent_scaled)
     return ents

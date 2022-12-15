@@ -15,7 +15,7 @@
                 "--wsize",
                 "31",
                 "--nonlinear",
-                "none",
+                "equal",
                 "--parameter",
                 "5",
                 "--channel",
@@ -26,7 +26,6 @@
                 "133",
                 "--dog_param2",
                 "200",
-                "--v1lhe",
                 "--footprint",
                 "15",
             ]

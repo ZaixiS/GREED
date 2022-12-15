@@ -49,7 +49,6 @@ elif socket.gethostname().find('a51999') > 0:  # Diaochan
     vid_pth = '/mnt/31393986-51f4-4175-8683-85582af93b23/videos/HDR_2022_SPRING_yuv_update'
     out_root = './temp_feat/'
 
-
 # elif socket.gethostname().find('895095')>0: #DarthVader
 #     vid_pth = '/media/josh/seagate/hdr_videos/fall2021_hdr_upscaled_yuv/'
 #     out_root_vif = '/media/zaixi/zaixi_nas/HDRproject/feats/hdrvifnew/vif'
@@ -74,9 +73,8 @@ def process_video(ind):
 
         feats = hdr_greed(join(vid_pth, video),
                           join(vid_pth, ref), fcount, args)
-        df = pd.DataFrame(feats).transpose()
-        df['video'] = bname
-        return df
+
+        return feats
     return
 
 
@@ -102,6 +100,8 @@ print(outpth)
 
 file = join(outpth, 'feats.csv')
 if not os.path.exists(file):
+    # r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
+    #     delayed(process_video)(i) for i in range(2))
     r = Parallel(n_jobs=100, verbose=1, backend="multiprocessing")(
         delayed(process_video)(i) for i in range(len(info)))
     feats = pd.concat(r)
