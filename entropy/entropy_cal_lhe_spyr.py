@@ -274,4 +274,5 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
             spatial_ent_scaled = np.log(
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
+            frame_data = image_rescaled 
     return ents

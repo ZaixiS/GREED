@@ -106,7 +106,7 @@ file = join(outpth, 'feats.csv')
 if not os.path.exists(file):
     # r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
     #     delayed(process_video)(i) for i in range(2))
-    r = Parallel(n_jobs=100, verbose=1, backend="multiprocessing")(
+    r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
         delayed(process_video)(i) for i in range(len(info)))
     feats = pd.concat(r)
     feats.to_csv(join(outpth, 'feats.csv'))
