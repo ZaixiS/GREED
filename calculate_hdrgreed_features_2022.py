@@ -69,13 +69,17 @@ def process_video(ind):
     ref = info['ref'][ind]
     fcount = info['framenos'][ind]
     bname = os.path.basename(video)
+    csv_name = os.path.join(outpth,bname.replace('.yuv','.csv'))
     if video != ref:
-
-        feats = hdr_greed(join(vid_pth, video),
-                          join(vid_pth, ref), fcount, args)
-
-        return feats
+        if not os.path.exists(csv_name):
+            feats = hdr_greed(join(vid_pth, video),
+                            join(vid_pth, ref), fcount, args)
+            feats.to_csv(os.path.join(outpth,bname.replace('.yuv','.csv')))
+            return feats
+        else:
+            print('found')
     return
+
 
 
 if args.band_pass.lower() != 'dog':

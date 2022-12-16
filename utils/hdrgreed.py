@@ -89,12 +89,13 @@ def hdr_greed(dis_name, ref_name, framenum, args):
                 dis_singlechannel, args, dis_name, framenum)
             ent_diff_1 = cal_difference_by_band(ref_ent_none, dis_ent_none)
 
-            feats.append(ent_diff_1)
+        feats.append(ent_diff_1)
     feats = np.stack(feats)
     feats = feats.mean(axis=0)
     # now = datetime.now()
     feats = pd.DataFrame(feats).transpose()
     feats['video'] = os.path.basename(dis_name)
+    
     # current_time = now.strftime("%H:%M:%S")
     # print("Finish Time =", current_time)
     return feats
