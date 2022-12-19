@@ -152,7 +152,7 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
     elif method.lower() == 'ms':
         win_len = 7
         ents = []
-        for scale_factor in range(4):
+        for scale_factor in range(6):
             image_rescaled = rescale(
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
             window = gen_gauss_window((win_len-1)/2, win_len/6)
@@ -170,7 +170,7 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
             spatial_ent_scaled = np.log(
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
-    elif method.lower() == 'mscn':
+    elif method.lower() == 'mscn_spyr':  # mscn + spyr this is wrong. Should not be used
         win_len = 7
         ents = []
 
@@ -251,6 +251,29 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
                 1 + spatial_sig_frame**2) * spatial_ent_frame
             ents.append(spatial_ent_scaled)
 
+    elif method.lower() == 'mscn':
+        win_len = 7
+        ents = []
+        for scale_factor in range(6):
+            image_rescaled = rescale(
+                frame_data, 0.5**scale_factor, anti_aliasing=True)
+            window = gen_gauss_window((win_len-1)/2, win_len/6)
+            mscn1, var, mu = compute_image_mscn_transform(
+                frame_data, extend_mode='nearest')
+            spatial_sig_frame, spatial_ent_frame = est_params_ggd(
+                mscn1, blk, sigma_nsq)
+            spatial_sig_frame = np.array(spatial_sig_frame)
+            spatial_sig_frame[np.isinf(spatial_sig_frame)] = 0
+
+            spatial_ent_frame = np.array(spatial_ent_frame)
+            spatial_ent_frame[np.isinf(spatial_ent_frame)] = 0
+
+            spatial_ent_scaled = np.log(
+                1 + spatial_sig_frame**2) * spatial_ent_frame
+            ents.append(spatial_ent_scaled)
+
+
+
     elif method.lower() == 'dog':
         win_len = 7
         ents = []
@@ -260,7 +283,7 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
                 frame_data, 0.5**scale_factor, anti_aliasing=True)
 
             dog_coef = difference_of_gaussians(
-                frame_data, args.dog_param1, args.dog_param2)
+                image_rescaled, args.dog_param1, args.dog_param2)
             if args.v1lhe:
                 dog_coef = scale_lhe(dog_coef, args)
             spatial_sig_frame, spatial_ent_frame = est_params_ggd(
@@ -273,6 +296,5 @@ def entrpy_frame(frame_data, args=None, vid_name=None, frame_ind=None):
 
             spatial_ent_scaled = np.log(
                 1 + spatial_sig_frame**2) * spatial_ent_frame
-            ents.append(spatial_ent_scaled)
-            frame_data = image_rescaled 
+            ents.append(spatial_ent_scaled.copy())
     return ents

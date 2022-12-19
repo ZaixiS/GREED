@@ -96,3 +96,15 @@ def global_exp(image,par):
     avg = np.average(image)
     y = np.exp(par*(image-avg))
     return y
+
+    
+def Y_compute_lnl(Y):
+    if(len(Y.shape)==2):
+        Y = np.expand_dims(Y,axis=2)
+
+    maxY = scipy.ndimage.maximum_filter(Y,size=(17,17,1))
+    minY = scipy.ndimage.minimum_filter(Y,size=(17,17,1))
+    Y_scaled = -1+(Y-minY)* 2/(1e-3+maxY-minY)
+    Y_transform =  np.exp(np.abs(Y_scaled)*4)-1
+    Y_transform[Y_scaled<0] = -Y_transform[Y_scaled<0]
+    return Y_transform

@@ -13,7 +13,7 @@ import socket
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--nonlinear", help="select the nonliearity. Support 'local_exp', 'global_exp', 'equal' or 'none'.")
+    "--nonlinear", help="select the nonliearity. Support 'lnl'(for single exponential) ,'local_exp', 'global_exp', 'equal' or 'none'.")
 parser.add_argument(
     "--parameter", help="the parameter for the nonliear. Use with --nonliear", type=float)
 parser.add_argument(
@@ -79,9 +79,6 @@ def process_video(ind):
         else:
             print('found')
     return
-
-
-
 if args.band_pass.lower() != 'dog':
     if args.v1lhe:
         outpth = join(
@@ -106,9 +103,11 @@ file = join(outpth, 'feats.csv')
 if not os.path.exists(file):
     # r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
     #     delayed(process_video)(i) for i in range(2))
-    r = Parallel(n_jobs=1, verbose=1, backend="multiprocessing")(
+    r = Parallel(n_jobs=80, verbose=1, backend="multiprocessing")(
         delayed(process_video)(i) for i in range(len(info)))
     feats = pd.concat(r)
     feats.to_csv(join(outpth, 'feats.csv'))
 else:
     print('found')
+
+
